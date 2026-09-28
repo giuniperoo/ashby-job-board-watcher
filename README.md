@@ -2,7 +2,7 @@
 
 **Ashby Job Board Watcher finds recent jobs that fit you across thousands of companies that hire through [Ashby](https://www.ashbyhq.com/)**. It filters by **title, seniority, posting date, location, work arrangement and salary**, then optionally has **Claude read each posting** to check whether you can actually be hired from where you live, how many office days it needs, and how well the role matches what you want. Results come back **ranked** as strong matches, possible matches and rejections, each with the reason.
 
-Ashby has no search across companies, so the Actor builds its own list of Ashby job boards from [Common Crawl](https://commoncrawl.org/)'s public web index (about 3,700 boards) and scans them through Ashby's public job-board API. Many startup jobs on LinkedIn link through to Ashby anyway. Going straight to the source gets you every open role, often sooner, with structured pay ranges.
+Ashby has no search across companies, so the Actor builds its own list of Ashby job boards from [Common Crawl](https://commoncrawl.org/)'s public web index (about 4,000 boards) and scans them through Ashby's public job-board API. Many startup jobs on LinkedIn link through to Ashby anyway. Going straight to the source gets you every open role, often sooner, with structured pay ranges.
 
 On the Apify platform you can **schedule** a daily run that only returns new jobs, and send the results to email, Slack or Google Sheets.
 

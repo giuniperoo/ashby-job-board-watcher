@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, it, vi } from 'vitest';
 
-import { slugFromUrl, slugsFromIndexLines } from '../src/commoncrawl.js';
+import { fetchCrawlSlugs, slugFromUrl, slugsFromIndexLines } from '../src/commoncrawl.js';
 import {
     annualize,
     buildPhraseMatcher,
@@ -391,6 +391,34 @@ describe('Screener', () => {
         expect(await screener.screen(row(), '')).toBeNull();
         expect(await screener.screen(row(), '')).toBeNull();
         expect(create).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('Common Crawl crawl download', () => {
+    const respond = (status: number, body: string) => new Response(body, { status });
+    const pagesBody = JSON.stringify({ pages: 2, pageSize: 5, blocks: 8 });
+    const page = (...slugs: string[]) =>
+        slugs.map((s) => JSON.stringify({ url: `https://jobs.ashbyhq.com/${s}/x` })).join('\n');
+
+    const stubFetch = (...responses: Response[]) => {
+        const fetchMock = vi.fn();
+        for (const r of responses) fetchMock.mockResolvedValueOnce(r);
+        vi.stubGlobal('fetch', fetchMock);
+        return fetchMock;
+    };
+
+    it('collects slugs from every page', async () => {
+        stubFetch(respond(200, pagesBody), respond(200, page('linear', 'apify')), respond(200, page('posthog')));
+        expect((await fetchCrawlSlugs('CC-TEST'))?.sort()).toEqual(['apify', 'linear', 'posthog']);
+        vi.unstubAllGlobals();
+    });
+
+    it('fails the whole crawl when a page is missing or empty, so it is never cached partially', async () => {
+        stubFetch(respond(200, pagesBody), respond(200, page('linear')), respond(404, 'No Captures found'));
+        expect(await fetchCrawlSlugs('CC-TEST')).toBeNull();
+        stubFetch(respond(200, pagesBody), respond(200, page('linear')), respond(200, ''));
+        expect(await fetchCrawlSlugs('CC-TEST')).toBeNull();
+        vi.unstubAllGlobals();
     });
 });
 

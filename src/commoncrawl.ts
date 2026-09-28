@@ -56,23 +56,31 @@ async function listCrawlIds(count: number): Promise<string[]> {
     return crawls.slice(0, count).map((c) => c.id);
 }
 
-/** Returns all slugs in one crawl, or null if any page of the index couldn't be fetched. */
-async function fetchCrawlSlugs(crawlId: string): Promise<string[] | null> {
+/**
+ * Returns all slugs in one crawl, or null if any page of the index couldn't be fetched. A crawl's result is
+ * cached forever, so anything short of every page parsing to at least one board counts as a failure:
+ * the index sometimes answers 404 or an empty body for a page it just said exists.
+ */
+export async function fetchCrawlSlugs(crawlId: string): Promise<string[] | null> {
     const base = `${CC_INDEX}/${crawlId}-index?url=${encodeURIComponent(URL_PATTERN)}&output=json`;
     const pagesResponse = await fetchWithRetry(`${base}&showNumPages=true`, CC_RETRY);
     if (!pagesResponse.ok) return null;
     const { pages } = (await pagesResponse.json()) as { pages: number };
+    if (!pages) return null;
 
     const slugs = new Set<string>();
     for (let page = 0; page < pages; page++) {
         const response = await fetchWithRetry(`${base}&fl=url&page=${page}`, CC_RETRY);
-        // 404 on a page means "no captures", which is a valid empty result.
-        if (response.status === 404) continue;
         if (!response.ok) {
             log.warning(`Common Crawl ${crawlId} page ${page + 1}/${pages} failed with HTTP ${response.status}.`);
             return null;
         }
-        for (const slug of slugsFromIndexLines(await response.text())) slugs.add(slug);
+        const pageSlugs = slugsFromIndexLines(await response.text());
+        if (!pageSlugs.size) {
+            log.warning(`Common Crawl ${crawlId} page ${page + 1}/${pages} returned no job boards.`);
+            return null;
+        }
+        for (const slug of pageSlugs) slugs.add(slug);
     }
     return [...slugs];
 }
