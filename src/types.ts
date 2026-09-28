@@ -23,6 +23,7 @@ export interface Input {
     companies?: string[];
     groupDuplicates?: boolean;
     onlyNewJobs?: boolean;
+    notificationEmail?: string;
     stateStoreName?: string;
     maxConcurrency?: number;
 }

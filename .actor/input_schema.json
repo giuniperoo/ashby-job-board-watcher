@@ -196,6 +196,12 @@
             "description": "Only output jobs that no previous run has returned. Useful with a daily schedule. Every run records what it found, whether or not this is on.",
             "default": false
         },
+        "notificationEmail": {
+            "title": "Notification email",
+            "type": "string",
+            "description": "Email the ranked matches to this address after each run that finds any (strong, possible or unscreened; rejected jobs are left out). Sent with Apify's apify/send-mail Actor, which runs on your account and only delivers to your Apify account's own email address, so enter that address. Leave empty for no email.",
+            "editor": "textfield"
+        },
         "stateStoreName": {
             "title": "State store name",
             "type": "string",

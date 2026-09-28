@@ -16,6 +16,7 @@ import {
     titleMatches,
     toRow,
 } from '../src/jobs.js';
+import { buildDigestEmail } from '../src/notify.js';
 import { applyScreening, formatPosting, parseScreening, rankRow, Screener, screeningKey } from '../src/screening.js';
 import type { AshbyJob, JobRow, Screening } from '../src/types.js';
 
@@ -342,6 +343,47 @@ describe('screening results', () => {
         expect(text).toMatch(/^<job_posting>/);
         expect(text).toContain('Locations: Berlin; Madrid');
         expect(text).toContain('We build things.');
+    });
+});
+
+describe('email digest', () => {
+    const strong = row({ ...applyScreening(row(), screening()), title: 'Senior Product Engineer' });
+    const possible = applyScreening(row({ title: 'Senior Frontend Engineer' }), screening({ eligibility: 'unclear' }));
+    const rejected = applyScreening(row({ title: 'Senior Fullstack Engineer' }), screening({ eligibility: 'no' }));
+
+    it('summarizes tiers in the subject and leaves out rejected jobs', () => {
+        const email = buildDigestEmail([strong, possible, rejected], { onlyNew: true, runUrl: null });
+        expect(email.subject).toBe('Ashby jobs: 1 strong, 1 possible new matches');
+        expect(email.html).toContain('Strong matches');
+        expect(email.html).toContain('Possible matches');
+        expect(email.html).not.toContain('Senior Fullstack Engineer');
+        expect(email.text).toContain('Why: Remote EMEA product engineering role focused on React.');
+        expect(email.text).toContain(strong.jobUrl);
+    });
+
+    it('escapes job text taken from postings', () => {
+        const nasty = applyScreening(
+            row({ title: '<script>alert(1)</script> Engineer', jobUrl: 'https://x/"a' }),
+            screening(),
+        );
+        const { html } = buildDigestEmail([nasty], {
+            onlyNew: false,
+            runUrl: 'https://console.apify.com/view/runs/r1',
+        });
+        expect(html).not.toContain('<script>');
+        expect(html).toContain('&lt;script&gt;');
+        expect(html).toContain('href="https://x/&quot;a"');
+        expect(html).toContain('https://console.apify.com/view/runs/r1');
+    });
+
+    it('caps the number of jobs listed', () => {
+        const many = Array.from({ length: 55 }, (_, i) =>
+            applyScreening(row({ title: `Senior Engineer ${i}` }), screening()),
+        );
+        const email = buildDigestEmail(many, { onlyNew: false, runUrl: null });
+        expect(email.subject).toBe('Ashby jobs: 55 strong matches');
+        expect(email.text).toContain('…and 5 more in the run output.');
+        expect(email.text).not.toContain('Senior Engineer 54');
     });
 });
 

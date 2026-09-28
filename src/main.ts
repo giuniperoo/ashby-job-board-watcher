@@ -16,6 +16,7 @@ import {
     titleMatches,
     toRow,
 } from './jobs.js';
+import { buildDigestEmail } from './notify.js';
 import type { CachedScreening } from './screening.js';
 import { applyScreening, Screener, screeningKey } from './screening.js';
 import type { Input, JobRow, MatchTier } from './types.js';
@@ -60,6 +61,7 @@ const {
     companies = [],
     groupDuplicates: shouldGroup = true,
     onlyNewJobs = false,
+    notificationEmail = '',
     stateStoreName = 'ashby-job-board-watcher-state',
     maxConcurrency = 10,
 } = input;
@@ -243,6 +245,26 @@ const summary = {
     newRows: output.filter((r) => r.isNew).length,
 };
 await Actor.setValue('RUN_SUMMARY', summary);
+
+// Email the digest only when something matched; a quiet run shouldn't produce an empty email.
+const emailRows = output.filter((row) => row.matchTier !== 'rejected');
+if (notificationEmail.trim() && emailRows.length) {
+    const { actorRunId } = Actor.getEnv();
+    const runUrl = Actor.isAtHome() && actorRunId ? `https://console.apify.com/view/runs/${actorRunId}` : null;
+    const email = buildDigestEmail(emailRows, { onlyNew: onlyNewJobs, runUrl });
+    try {
+        await Actor.setStatusMessage(`Emailing ${emailRows.length} matches...`);
+        const mailRun = await Actor.call(
+            'apify/send-mail',
+            { to: notificationEmail.trim(), ...email },
+            { memory: 256 },
+        );
+        if (mailRun.status === 'SUCCEEDED') log.info(`Emailed ${emailRows.length} matches.`);
+        else log.warning(`Sending the email digest ended with status ${mailRun.status}.`);
+    } catch (error) {
+        log.warning('Could not send the email digest.', { error: String(error) });
+    }
+}
 log.info('Done.', summary);
 await Actor.setStatusMessage(
     `Found ${output.length} jobs (${tierCounts.strong} strong, ${tierCounts.possible} possible, ` +
