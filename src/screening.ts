@@ -113,9 +113,13 @@ const POINTS = {
     salaryFit: { meets: 20, 'not listed': 8, below: 0 },
 } as const;
 
+/** Score penalty for titles that don't match a preferred keyword, when preferences are set. */
+const NON_PREFERRED_PENALTY = 15;
+
 /**
  * Turns a screening into a tier and a 0–100 score. Any hard "no" (not hireable from the candidate's
- * location, wrong arrangement, not an engineering role, pay below the minimum) rejects the job.
+ * location, wrong arrangement, not an engineering role, pay below the minimum) rejects the job. When
+ * preferred title keywords are set, other titles lose points and can be "possible" at best.
  */
 export function rankRow(row: JobRow, screening: Screening | null): { matchTier: MatchTier; matchScore: number } {
     const salaryPoints = POINTS.salaryFit[row.salaryFit];
@@ -127,6 +131,7 @@ export function rankRow(row: JobRow, screening: Screening | null): { matchTier: 
         screening.roleFit * 5 +
         salaryPoints;
     if (screening.roleFocus === 'backend-heavy') score -= 10;
+    if (row.preferredTitle === false) score -= NON_PREFERRED_PENALTY;
     const matchScore = Math.max(0, Math.min(100, score));
 
     const rejected =
@@ -140,7 +145,8 @@ export function rankRow(row: JobRow, screening: Screening | null): { matchTier: 
         screening.eligibility === 'yes' &&
         screening.arrangementFit === 'yes' &&
         screening.roleFit >= 4 &&
-        screening.roleFocus !== 'backend-heavy';
+        screening.roleFocus !== 'backend-heavy' &&
+        row.preferredTitle !== false;
     return { matchTier: strong ? 'strong' : 'possible', matchScore };
 }
 

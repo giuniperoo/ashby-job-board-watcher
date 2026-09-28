@@ -39,6 +39,7 @@ const input = (await Actor.getInput<Input>()) ?? {};
 const {
     titleKeywords = [],
     requiredTitleKeywords = [],
+    preferredTitleKeywords = [],
     excludeTitleKeywords = [],
     postedWithinDays = 14,
     acceptRemote = true,
@@ -111,6 +112,7 @@ const titleFilter = {
     required: buildPhraseMatcher(requiredTitleKeywords),
     exclude: buildPhraseMatcher(excludeTitleKeywords),
 };
+const preferredTitles = buildPhraseMatcher(preferredTitleKeywords);
 const arrangementFilter = {
     acceptRemote,
     acceptHybrid,
@@ -174,7 +176,7 @@ await mapWithConcurrency(slugList, Math.max(1, maxConcurrency), async (slug) => 
         if (!titleMatches(job.title, titleFilter)) continue;
         if (!publishedWithin(job.publishedAt, postedWithinDays)) continue;
         if (!passesWorkArrangement(job, arrangementFilter)) continue;
-        const row = toRow(slug, job, { salaryCurrency: currency, minSalary, rates });
+        const row = toRow(slug, job, { preferredTitles, salaryCurrency: currency, minSalary, rates });
         if (!passesSalaryFilter(row, { minSalary, includeJobsWithoutPay })) continue;
         rows.push(row);
         descriptions.set(job.id, job.descriptionPlain ?? '');
@@ -201,10 +203,15 @@ let output = shouldGroup ? groupDuplicates(rows) : rows;
 if (onlyNewJobs) output = output.filter((row) => row.isNew);
 
 // Screen each remaining row once; results are cached per job so reruns don't pay for the same posting twice.
+// Cached results for the current model and profile are applied even when no API key is available.
 const screenings = (await stateStore.getValue<Record<string, CachedScreening>>(SCREENINGS_KEY)) ?? {};
-if (screener) {
-    const key = screeningKey(aiModel, candidateProfile);
-    const toScreen = output.filter((row) => screenings[row.jobIds[0]]?.key !== key);
+const key = aiScreening && candidateProfile.trim() ? screeningKey(aiModel, candidateProfile) : null;
+const cachedFor = (row: JobRow) => {
+    const cached = screenings[row.jobIds[0]];
+    return key && cached?.key === key ? cached.screening : null;
+};
+if (screener && key) {
+    const toScreen = output.filter((row) => !cachedFor(row));
     stats.screeningsReused = output.length - toScreen.length;
     if (toScreen.length) await Actor.setStatusMessage(`Screening ${toScreen.length} jobs with ${aiModel}...`);
     await mapWithConcurrency(toScreen, AI_CONCURRENCY, async (row) => {
@@ -214,17 +221,14 @@ if (screener) {
         screenings[id] = { key, screening, screenedAt: now };
         stats.screened++;
     });
-    for (const row of output) {
-        const cached = screenings[row.jobIds[0]];
-        applyScreening(row, cached?.key === key ? cached.screening : null);
-    }
     for (const [id, cached] of Object.entries(screenings)) {
         if (cached.screenedAt < cutoff) delete screenings[id];
     }
     await stateStore.setValue(SCREENINGS_KEY, screenings);
-} else {
-    for (const row of output) applyScreening(row, null);
+} else if (key) {
+    stats.screeningsReused = output.filter((row) => cachedFor(row)).length;
 }
+for (const row of output) applyScreening(row, cachedFor(row));
 
 const tierCounts = { strong: 0, possible: 0, unscreened: 0, rejected: 0 };
 for (const row of output) tierCounts[row.matchTier]++;
@@ -232,6 +236,7 @@ if (!includeRejected) output = output.filter((row) => row.matchTier !== 'rejecte
 output.sort(
     (a, b) =>
         TIER_ORDER[a.matchTier] - TIER_ORDER[b.matchTier] ||
+        Number(b.preferredTitle === true) - Number(a.preferredTitle === true) ||
         b.matchScore - a.matchScore ||
         b.publishedAt.localeCompare(a.publishedAt),
 );

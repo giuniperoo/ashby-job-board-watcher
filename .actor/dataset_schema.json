@@ -96,6 +96,7 @@
                 "fields": [
                     "matchTier",
                     "matchScore",
+                    "preferredTitle",
                     "publishedAt",
                     "company",
                     "title",
@@ -268,6 +269,10 @@
                     "jobUrls": {
                         "label": "All posting URLs",
                         "format": "array"
+                    },
+                    "preferredTitle": {
+                        "label": "Preferred title",
+                        "format": "boolean"
                     }
                 }
             }

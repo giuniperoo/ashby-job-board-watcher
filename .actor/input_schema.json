@@ -15,6 +15,16 @@
             "default": ["product engineer"],
             "sectionCaption": "Role"
         },
+        "preferredTitleKeywords": {
+            "title": "Preferred title keywords",
+            "type": "array",
+            "description": "Rank jobs whose title contains any of these phrases first, e.g. \"product engineer\". Other matching jobs lose 15 points and can be \"possible\" matches at most. Leave empty to rank all titles equally.",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
         "requiredTitleKeywords": {
             "title": "Title must also contain",
             "type": "array",

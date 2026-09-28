@@ -346,6 +346,27 @@ describe('screening results', () => {
     });
 });
 
+describe('preferred titles', () => {
+    const preferredTitles = buildPhraseMatcher(['product engineer']);
+    const make = (title: string) =>
+        toRow('acme', job({ title }), { preferredTitles, salaryCurrency: 'EUR', minSalary: 100000, rates: RATES });
+
+    it('flags preferred titles, and leaves the flag null without preferences', () => {
+        expect(make('Senior Product Engineer').preferredTitle).toBe(true);
+        expect(make('Senior Full-Stack Product Engineer').preferredTitle).toBe(true);
+        expect(make('Senior Frontend Engineer').preferredTitle).toBe(false);
+        expect(toRow('acme', job()).preferredTitle).toBeNull();
+    });
+
+    it('keeps other titles out of the strong tier and lowers their score', () => {
+        const preferred = rankRow(make('Senior Product Engineer'), screening());
+        const other = rankRow(make('Senior Frontend Engineer'), screening());
+        expect(preferred).toEqual({ matchTier: 'strong', matchScore: 100 });
+        expect(other).toEqual({ matchTier: 'possible', matchScore: 85 });
+        expect(rankRow(make('Senior Frontend Engineer'), screening({ eligibility: 'no' })).matchTier).toBe('rejected');
+    });
+});
+
 describe('email digest', () => {
     const strong = row({ ...applyScreening(row(), screening()), title: 'Senior Product Engineer' });
     const possible = applyScreening(row({ title: 'Senior Frontend Engineer' }), screening({ eligibility: 'unclear' }));

@@ -1,6 +1,7 @@
 export interface Input {
     titleKeywords?: string[];
     requiredTitleKeywords?: string[];
+    preferredTitleKeywords?: string[];
     excludeTitleKeywords?: string[];
     postedWithinDays?: number;
     acceptRemote?: boolean;
@@ -83,6 +84,8 @@ export interface Screening {
 export interface JobRow {
     matchTier: MatchTier;
     matchScore: number;
+    /** Whether the title matches a preferred keyword; null when no preferences are set. */
+    preferredTitle: boolean | null;
     company: string;
     title: string;
     department: string | null;

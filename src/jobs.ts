@@ -191,12 +191,17 @@ export function passesSalaryFilter(row: JobRow, { minSalary, includeJobsWithoutP
 }
 
 export interface RowOptions {
+    preferredTitles?: RegExp | null;
     salaryCurrency?: string | null;
     minSalary?: number | null;
     rates?: FxRates | null;
 }
 
-export function toRow(company: string, job: AshbyJob, { salaryCurrency, minSalary, rates }: RowOptions = {}): JobRow {
+export function toRow(
+    company: string,
+    job: AshbyJob,
+    { preferredTitles, salaryCurrency, minSalary, rates }: RowOptions = {},
+): JobRow {
     const salary = pickSalary(job, salaryCurrency);
     const interval = salary?.interval ?? null;
     const maxAnnual = annualize(salary?.maxValue ?? null, interval);
@@ -204,6 +209,7 @@ export function toRow(company: string, job: AshbyJob, { salaryCurrency, minSalar
     const row: JobRow = {
         matchTier: 'unscreened',
         matchScore: 0,
+        preferredTitle: preferredTitles ? preferredTitles.test(job.title) : null,
         company,
         title: job.title.trim(),
         department: job.department ?? null,
