@@ -17,3 +17,24 @@ jobs:
             - run: npm ci
             - run: npm run build
             - run: npm test
+
+    # Deploys to Apify only after tests pass, and only for pushes to main (never for pull requests).
+    deploy:
+        needs: build-and-test
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        # Let a deploy that's already running finish before the next one starts.
+        concurrency:
+            group: apify-deploy
+            cancel-in-progress: false
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+            - run: npm install --global apify-cli@1
+            - name: Push and build on Apify
+              run: apify push
+              env:
+                  APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
