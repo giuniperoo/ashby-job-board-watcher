@@ -34,7 +34,13 @@ jobs:
               with:
                   node-version: 24
             - run: npm install --global apify-cli@1
+            # `apify push` needs a logged-in CLI; it doesn't read APIFY_TOKEN on its own.
+            - name: Log in to Apify
+              run: apify login --token "$APIFY_TOKEN"
+              env:
+                  APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+                  APIFY_CLI_DISABLE_TELEMETRY: '1'
             - name: Push and build on Apify
               run: apify push
               env:
-                  APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+                  APIFY_CLI_DISABLE_TELEMETRY: '1'
