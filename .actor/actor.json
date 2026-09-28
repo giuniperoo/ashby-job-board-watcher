@@ -1,0 +1,19 @@
+{
+    "$schema": "https://apify.com/schemas/v1/actor.ide.json",
+    "actorSpecification": 1,
+    "name": "ashby-job-board-watcher",
+    "title": "Ashby Job Board Watcher",
+    "description": "Finds recent jobs that fit you across thousands of Ashby-powered companies, filtered by title, location, work arrangement and salary, and ranked by an AI screening step.",
+    "version": "0.3",
+    "buildTag": "latest",
+    "meta": {
+        "templateId": "ts-empty",
+        "generatedBy": "Claude Code with Claude Opus 5.5"
+    },
+    "inputSchema": "./input_schema.json",
+    "outputSchema": "./output_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    },
+    "dockerfile": "../Dockerfile"
+}

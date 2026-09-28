@@ -1,0 +1,276 @@
+{
+    "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
+    "actorSpecification": 1,
+    "fields": {},
+    "views": {
+        "overview": {
+            "title": "Ranked matches",
+            "transformation": {
+                "fields": [
+                    "matchTier",
+                    "matchScore",
+                    "publishedAt",
+                    "company",
+                    "title",
+                    "locations",
+                    "workArrangement",
+                    "officeRequirement",
+                    "eligibility",
+                    "roleFocus",
+                    "compensationSummary",
+                    "compensationMaxAnnualConverted",
+                    "matchSummary",
+                    "isNew",
+                    "jobUrl"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "matchTier": {
+                        "label": "Match",
+                        "format": "text"
+                    },
+                    "matchScore": {
+                        "label": "Score",
+                        "format": "number"
+                    },
+                    "publishedAt": {
+                        "label": "Published",
+                        "format": "date"
+                    },
+                    "company": {
+                        "label": "Company",
+                        "format": "text"
+                    },
+                    "title": {
+                        "label": "Title",
+                        "format": "text"
+                    },
+                    "locations": {
+                        "label": "Locations",
+                        "format": "array"
+                    },
+                    "workArrangement": {
+                        "label": "Arrangement (AI)",
+                        "format": "text"
+                    },
+                    "officeRequirement": {
+                        "label": "Office requirement",
+                        "format": "text"
+                    },
+                    "eligibility": {
+                        "label": "Eligible",
+                        "format": "text"
+                    },
+                    "roleFocus": {
+                        "label": "Role focus",
+                        "format": "text"
+                    },
+                    "compensationSummary": {
+                        "label": "Compensation",
+                        "format": "text"
+                    },
+                    "compensationMaxAnnualConverted": {
+                        "label": "Max pay / year (converted)",
+                        "format": "number"
+                    },
+                    "matchSummary": {
+                        "label": "Why",
+                        "format": "text"
+                    },
+                    "isNew": {
+                        "label": "New",
+                        "format": "boolean"
+                    },
+                    "jobUrl": {
+                        "label": "Job URL",
+                        "format": "link"
+                    }
+                }
+            }
+        },
+        "details": {
+            "title": "All fields",
+            "transformation": {
+                "fields": [
+                    "matchTier",
+                    "matchScore",
+                    "publishedAt",
+                    "company",
+                    "title",
+                    "department",
+                    "team",
+                    "employmentType",
+                    "locations",
+                    "workplaceType",
+                    "isRemote",
+                    "workArrangement",
+                    "officeRequirement",
+                    "arrangementFit",
+                    "eligibility",
+                    "eligibilityEvidence",
+                    "roleFocus",
+                    "roleFit",
+                    "matchSummary",
+                    "compensationSummary",
+                    "compensationMin",
+                    "compensationMax",
+                    "compensationCurrency",
+                    "compensationInterval",
+                    "compensationMinAnnual",
+                    "compensationMaxAnnual",
+                    "compensationMaxAnnualConverted",
+                    "convertedCurrency",
+                    "salaryFit",
+                    "isNew",
+                    "firstSeenAt",
+                    "jobUrl",
+                    "applyUrl",
+                    "jobUrls"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "matchTier": {
+                        "label": "Match",
+                        "format": "text"
+                    },
+                    "matchScore": {
+                        "label": "Score",
+                        "format": "number"
+                    },
+                    "publishedAt": {
+                        "label": "Published",
+                        "format": "date"
+                    },
+                    "company": {
+                        "label": "Company",
+                        "format": "text"
+                    },
+                    "title": {
+                        "label": "Title",
+                        "format": "text"
+                    },
+                    "department": {
+                        "label": "Department",
+                        "format": "text"
+                    },
+                    "team": {
+                        "label": "Team",
+                        "format": "text"
+                    },
+                    "employmentType": {
+                        "label": "Type",
+                        "format": "text"
+                    },
+                    "locations": {
+                        "label": "Locations",
+                        "format": "array"
+                    },
+                    "workplaceType": {
+                        "label": "Workplace",
+                        "format": "text"
+                    },
+                    "isRemote": {
+                        "label": "Remote",
+                        "format": "boolean"
+                    },
+                    "workArrangement": {
+                        "label": "Arrangement (AI)",
+                        "format": "text"
+                    },
+                    "officeRequirement": {
+                        "label": "Office requirement",
+                        "format": "text"
+                    },
+                    "arrangementFit": {
+                        "label": "Arrangement fit",
+                        "format": "text"
+                    },
+                    "eligibility": {
+                        "label": "Eligible",
+                        "format": "text"
+                    },
+                    "eligibilityEvidence": {
+                        "label": "Eligibility evidence",
+                        "format": "text"
+                    },
+                    "roleFocus": {
+                        "label": "Role focus",
+                        "format": "text"
+                    },
+                    "roleFit": {
+                        "label": "Role fit (1-5)",
+                        "format": "number"
+                    },
+                    "matchSummary": {
+                        "label": "Why",
+                        "format": "text"
+                    },
+                    "compensationSummary": {
+                        "label": "Compensation",
+                        "format": "text"
+                    },
+                    "compensationMin": {
+                        "label": "Min pay",
+                        "format": "number"
+                    },
+                    "compensationMax": {
+                        "label": "Max pay",
+                        "format": "number"
+                    },
+                    "compensationCurrency": {
+                        "label": "Currency",
+                        "format": "text"
+                    },
+                    "compensationInterval": {
+                        "label": "Interval",
+                        "format": "text"
+                    },
+                    "compensationMinAnnual": {
+                        "label": "Min pay / year",
+                        "format": "number"
+                    },
+                    "compensationMaxAnnual": {
+                        "label": "Max pay / year",
+                        "format": "number"
+                    },
+                    "compensationMaxAnnualConverted": {
+                        "label": "Max pay / year (converted)",
+                        "format": "number"
+                    },
+                    "convertedCurrency": {
+                        "label": "Converted to",
+                        "format": "text"
+                    },
+                    "salaryFit": {
+                        "label": "Salary fit",
+                        "format": "text"
+                    },
+                    "isNew": {
+                        "label": "New",
+                        "format": "boolean"
+                    },
+                    "firstSeenAt": {
+                        "label": "First seen",
+                        "format": "date"
+                    },
+                    "jobUrl": {
+                        "label": "Job URL",
+                        "format": "link"
+                    },
+                    "applyUrl": {
+                        "label": "Apply URL",
+                        "format": "link"
+                    },
+                    "jobUrls": {
+                        "label": "All posting URLs",
+                        "format": "array"
+                    }
+                }
+            }
+        }
+    }
+}

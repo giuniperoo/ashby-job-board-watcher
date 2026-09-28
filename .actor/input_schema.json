@@ -1,0 +1,217 @@
+{
+    "$schema": "https://apify.com/schemas/v1/input.ide.json",
+    "title": "Ashby Job Board Watcher Input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "titleKeywords": {
+            "title": "Job title keywords",
+            "type": "array",
+            "description": "Keep jobs whose title contains any of these phrases (case-insensitive, whole words). \"product engineer\" matches \"Senior Product Engineer\" but not \"Product Engineering Lead\". Leave empty to keep every title.",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": ["product engineer"],
+            "sectionCaption": "Role"
+        },
+        "requiredTitleKeywords": {
+            "title": "Title must also contain",
+            "type": "array",
+            "description": "The title must also contain at least one of these phrases, e.g. \"senior\" to require a seniority level. Leave empty for no requirement.",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
+        "excludeTitleKeywords": {
+            "title": "Exclude title keywords",
+            "type": "array",
+            "description": "Drop jobs whose title contains any of these phrases, e.g. \"staff\", \"manager\" or \"backend\".",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": ["intern", "internship"]
+        },
+        "postedWithinDays": {
+            "title": "Posted within (days)",
+            "type": "integer",
+            "description": "Only keep jobs published in the last N days. Use 0 for no limit.",
+            "minimum": 0,
+            "default": 14,
+            "unit": "days"
+        },
+        "acceptRemote": {
+            "title": "Accept fully remote roles",
+            "type": "boolean",
+            "description": "Keep roles Ashby marks as fully remote, subject to the country and region checks below.",
+            "default": true,
+            "sectionCaption": "Location and work arrangement"
+        },
+        "remoteCountries": {
+            "title": "Countries for remote roles",
+            "type": "array",
+            "description": "Keep a remote role only when one of its locations is in these countries, using the country Ashby records for each location (\"EMEA - Remote\" is recorded as \"European Union\"; \"Toronto\" as \"Canada\"). Leave empty to accept remote roles in any country. Whether a specific posting can hire you is judged by the AI screening.",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
+        "remoteExcludedRegions": {
+            "title": "Exclude remote locations naming",
+            "type": "array",
+            "description": "For remote locations without a recorded country: drop the location when it names one of these regions, e.g. \"US\" or \"LATAM\".",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
+        "remoteAllowedRegions": {
+            "title": "Always allow remote locations naming",
+            "type": "array",
+            "description": "For remote locations without a recorded country: keep the location when it names one of these regions, even if it also names an excluded one (e.g. \"Europe\" keeps \"US or Europe\").",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
+        "acceptHybrid": {
+            "title": "Accept hybrid roles",
+            "type": "boolean",
+            "description": "Keep hybrid roles, and roles with no workplace type, located in one of the office cities below. How many office days you accept goes in the candidate profile, which the AI screening checks.",
+            "default": true
+        },
+        "acceptOnSite": {
+            "title": "Accept on-site roles",
+            "type": "boolean",
+            "description": "Keep fully on-site roles located in one of the office cities below.",
+            "default": true
+        },
+        "officeCities": {
+            "title": "Office cities",
+            "type": "array",
+            "description": "Cities where you'd work hybrid or on-site, e.g. \"Berlin\". A role passes when any of its locations names one of them. Leave empty to accept any city.",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
+        "minSalary": {
+            "title": "Minimum salary (annual)",
+            "type": "integer",
+            "description": "Keep only jobs whose top of range is at least this much per year, in the salary currency below. Hourly, weekly and monthly pay is annualized, and other currencies are converted at the European Central Bank's daily rate. Leave empty to ignore pay.",
+            "nullable": true,
+            "minimum": 0,
+            "sectionCaption": "Pay"
+        },
+        "salaryCurrency": {
+            "title": "Salary currency",
+            "type": "string",
+            "description": "ISO currency code for the minimum salary, e.g. EUR, USD or GBP. Leave empty to compare numbers as-is, regardless of currency.",
+            "editor": "textfield",
+            "nullable": true
+        },
+        "includeJobsWithoutPay": {
+            "title": "Include jobs without pay",
+            "type": "boolean",
+            "description": "Keep jobs that don't list pay (most don't). Only used when a minimum salary is set. They rank below jobs whose pay meets the minimum.",
+            "default": true
+        },
+        "aiScreening": {
+            "title": "AI screening",
+            "type": "boolean",
+            "description": "Have Claude read each matching posting and judge it against your candidate profile: whether you can be hired from where you live, the office requirement, and how well the role fits. Results are ranked into strong, possible and rejected. Needs an Anthropic API key and a candidate profile. Each posting is screened once and the result is cached.",
+            "default": true,
+            "sectionCaption": "AI screening"
+        },
+        "anthropicApiKey": {
+            "title": "Anthropic API key",
+            "type": "string",
+            "description": "Your Anthropic API key, from console.anthropic.com. Stored encrypted. Falls back to the ANTHROPIC_API_KEY environment variable. Without a key, results are ranked by salary only.",
+            "editor": "textfield",
+            "isSecret": true
+        },
+        "aiModel": {
+            "title": "Claude model",
+            "type": "string",
+            "description": "Model used for screening. Claude Opus 5 is the most accurate. Sonnet 5 and Haiku 4.5 are cheaper and faster.",
+            "editor": "select",
+            "enum": ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5"],
+            "enumTitles": ["Claude Opus 5", "Claude Sonnet 5", "Claude Haiku 4.5"],
+            "default": "claude-opus-5"
+        },
+        "candidateProfile": {
+            "title": "Candidate profile",
+            "type": "string",
+            "description": "Who you are and what you're looking for, in plain language. The AI screening judges every posting against this text. State where you live (and any work-authorization limits), which work arrangements you accept (e.g. \"remote anywhere in Europe, or hybrid with at most 2 office days a week in Berlin\"), the role and seniority you want, and your salary target. Required for AI screening.",
+            "editor": "textarea"
+        },
+        "includeRejected": {
+            "title": "Include rejected jobs",
+            "type": "boolean",
+            "description": "Also output jobs the screening ruled out, at the bottom of the list, with the reason.",
+            "default": false
+        },
+        "discoverCompanies": {
+            "title": "Discover companies",
+            "type": "boolean",
+            "description": "Find companies that use Ashby automatically, from Common Crawl's public web index. Turn off to scan only the companies listed below.",
+            "default": true,
+            "sectionCaption": "Which companies to scan"
+        },
+        "crawlsToSearch": {
+            "title": "Common Crawl snapshots to search",
+            "type": "integer",
+            "description": "How many of the most recent monthly Common Crawl snapshots to pull company names from. More snapshots find more companies. Each snapshot is cached after its first download.",
+            "minimum": 1,
+            "maximum": 12,
+            "default": 3
+        },
+        "companies": {
+            "title": "Companies",
+            "type": "array",
+            "description": "Extra Ashby job-board slugs or URLs to always scan, e.g. \"linear\" or \"https://jobs.ashbyhq.com/linear\".",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "default": []
+        },
+        "groupDuplicates": {
+            "title": "Group duplicate postings",
+            "type": "boolean",
+            "description": "Merge postings of the same role that a company lists once per city into one row with all locations. Postings with different pay stay separate.",
+            "default": true,
+            "sectionCaption": "Output"
+        },
+        "onlyNewJobs": {
+            "title": "Only new jobs",
+            "type": "boolean",
+            "description": "Only output jobs that no previous run has returned. Useful with a daily schedule. Every run records what it found, whether or not this is on.",
+            "default": false
+        },
+        "stateStoreName": {
+            "title": "State store name",
+            "type": "string",
+            "description": "Named key-value store that remembers jobs already seen, caches AI screenings and caches Common Crawl results. Use a different name per saved task to keep their \"new\" flags independent.",
+            "editor": "textfield",
+            "default": "ashby-job-board-watcher-state",
+            "sectionCaption": "Advanced"
+        },
+        "maxConcurrency": {
+            "title": "Max concurrency",
+            "type": "integer",
+            "description": "How many job boards to fetch at the same time.",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 10
+        }
+    },
+    "required": []
+}
